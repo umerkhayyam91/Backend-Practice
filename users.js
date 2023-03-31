@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
         validate: {
             validator: value => value % 2 === 0,
             message: props => `${props.value} is not an even number`
+            
         },
     },
 

@@ -13,20 +13,20 @@ mongoose.connect(
 
 run()
 async function run() {
- try {
-    const users = await user.create({
-        name: "ali",
-        age: 36,
-        hobbies: ["cricket", "football"],
-        email: "umer.khayyam900@gmail.com",
-        address: {
-            street: "Main St",
-            city: "Islamabad"
-        }
-    });
-    
-    console.log(users);
- } catch (error) {
-    console.log(error.message);
- }
+    try {
+        const users = await user.create({
+            name: "ali",
+            age: 36,
+            hobbies: ["cricket", "football"],
+            email: "umer.khayyam900@gmail.com",
+            address: {
+                street: "Main St",
+                city: "Islamabad"
+            }
+        });
+
+        console.log(users);
+    } catch (error) {
+        console.log(error.message);
+    }
 }
