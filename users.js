@@ -34,9 +34,44 @@ const userSchema = new mongoose.Schema({
         default: () => Date.now(),
     },
     hobbies: [String],
-    bestFriend: mongoose.SchemaTypes.ObjectId,
+    bestFriend: {
+        type : mongoose.SchemaTypes.ObjectId,
+        
+        ref : "users"
+    },
     address: addressSchema
 
 });
+
+// adding method on each instance of a user
+userSchema.methods.sayHi = function() {
+    console.log(`Hi my name is ${this.name}`);
+}
+
+// Static methods on models 
+userSchema.statics.findByName = function(name) {
+    return this.find({name : new RegExp(name, "i")})
+}
+
+// making a query
+userSchema.query.byName = function(name) {
+    return this.where({name : new RegExp(name, "i")})
+}
+
+// virtual
+userSchema.virtual("namedEmail").get(function() {
+    return `${this.name} <${this.email}>`
+})
+
+// middleware
+userSchema.pre("save", function(next) {
+    this.updatedAt = Date.now()
+    next()
+})
+
+userSchema.post("save", function(doc, next) {
+    doc.sayHi
+    next()
+})
 
 module.exports = mongoose.model("users", userSchema);
