@@ -3,12 +3,19 @@ const mongoose = require('mongoose');
 const app = express();
 const Payment = require("./routes/Payment")
 const bodyParser = require('body-parser');
+const formData = require('form-data');
+const Mailgun = require('mailgun-js');
+const apiKey = 'key-de8b1afd256f9e8923165b1d6406942a';
+const DOMAIN = 'sandboxa62be9b929c541d4b76dc747dbe77602.mailgun.org';
+const mg = new Mailgun({ apiKey, domain: DOMAIN });
 require('dotenv').config();
+// const formData = require('form-data');
+// const Mailgun = require('mailgun-js');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 
 mongoose.connect(
-  process.env.CONNECTION_STRING,
+  "mongodb+srv://umer91:emmawatson123@backendcluster.hehctlm.mongodb.net/?retryWrites=true&w=majority",
   { useNewUrlParser: true },
 ).then((result) => {
   console.log("DB Connected!!");
@@ -34,6 +41,8 @@ app.post('/create-payment-intent', async (req, res) => {
         amount: 1099,
         currency: 'usd',
         payment_method_types: ['card'],
+        receipt_email: 'umer.khayyam900@gmail.com',
+        description: '3% of your purchase goes toward our ocean cleanup effort!'
       },
       // {
       // idempotencyKey: idempotencyKey, // Include the idempotency key in the options
@@ -185,6 +194,25 @@ function handleWebhookEvent(event) {
       break;
     case 'payment_intent.succeeded':
       const paymentIntentSucceeded = event.data.object;
+      const paymentIntentId = paymentIntentSucceeded.id;
+      stripe.paymentIntents.retrieve(paymentIntentId)
+        .then(paymentIntent => {
+          const receiptEmail = paymentIntent.receipt_email;
+          const data = {
+            from: 'Excited User <mailgun@sandboxa62be9b929c541d4b76dc747dbe77602.mailgun.org>',
+            to: [receiptEmail],
+            subject: 'Payment',
+            text: 'Payment received!',
+            html: '<h1>Payment received!</h1>'
+          }
+          mg.messages().send(data, (error, body) => {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log(body);
+            }
+          });
+        })
       console.log('payment_intent.succeeded');
       // Then define and call a function to handle the event payment_intent.succeeded
       break;
