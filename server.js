@@ -27,6 +27,28 @@ app.use(bodyParser.json({
   },
 }));
 
+app.post('/create-customer', async (req, res) => {
+  stripe.customers.create(
+    {
+      email: 'customer@example.com',
+      name: 'John Doe',
+      description: 'New customer',
+      // Additional customer information can be provided here
+    },
+    function (err, customer) {
+      if (err) {
+        console.error(err);
+        res.json(err.message)
+        // Handle error
+      } else {
+        console.log(customer.id);
+        res.json("customer created")
+        // Use customer.id to reference the created customer
+      }
+    }
+  );
+})
+
 app.post('/create-payment-intent', async (req, res) => {
   try {
     // const { v4: uuidv4 } = require('uuid');
@@ -38,6 +60,7 @@ app.post('/create-payment-intent', async (req, res) => {
       {
         amount: 1099,
         currency: 'usd',
+        customer: "cus_O9Ol37MYoGSfhz",
         payment_method_types: ['card'],
         receipt_email: 'umer.khayyam900@gmail.com',
         description: '3% of your purchase goes toward our ocean cleanup effort!'
@@ -124,6 +147,25 @@ app.post('/create-checkout-session', async (req, res) => {
   }
 })
 
+app.post('/transaction-history', async (req, res) => {
+  stripe.charges.list(
+    {
+      customer: req.body.customerID,
+    },
+    (err, charges) => {
+      if (err) {
+        console.error(err);
+        // Handle error
+      } else {
+        charges.data.forEach((charge) => {
+          console.log(charge.id);
+          console.log(charge.amount);
+          console.log(charge.created);
+        });
+      }
+    }
+  );
+})
 
 
 function handleWebhookEvent(event) {
